@@ -1,0 +1,48 @@
+#!/usr/bin/env lua
+require("tasks")
+
+local argparse = require("argparse")
+
+---@param cmd_base argparse.Parser|argparse.Command
+---@return {task_path: string, task_desc: string}[]
+local function build_argument_parser(tasks, cmd_base)
+    for task_name, task_definition in pairs(tasks) do
+        if task_name == "_desc" then
+            goto continue
+        end
+
+        local desc = nil
+        if type(task_definition) == "table" and task_definition["_desc"] ~= nil then
+            desc = task_definition["_desc"]
+        end
+
+        local cmd = cmd_base:command(task_name, desc):add_help(false)
+        if
+            (type(task_definition) == "table" and type(task_definition["_action"]) == "function")
+            or (type(task_definition) == "function")
+        then
+            local action = nil
+            if type(task_definition) == "function" then
+                action = task_definition
+            else
+                action = task_definition["_action"]
+            end
+            cmd:action(action)
+        elseif type(task_definition) == "table" then
+            build_argument_parser(task_definition, cmd)
+        else
+            print("Task `" .. task_name .. "` is not having a valid action: " .. task_definition)
+            os.exit(false)
+        end
+        ::continue::
+    end
+end
+
+local parser = argparse("task-runner")
+build_argument_parser(tasks, parser)
+parser:add_help(false)
+
+local success, msg = parser:pparse()
+if (not success) then
+    print(msg)
+end
