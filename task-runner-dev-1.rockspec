@@ -12,7 +12,7 @@ build = {
    modules = {},
    install = {
         bin = {
-            "task-runner"
+            "trn"
         }
     }
 }
