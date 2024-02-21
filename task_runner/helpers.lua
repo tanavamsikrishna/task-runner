@@ -3,6 +3,9 @@ local posix = require("posix.unistd")
 
 local M = {}
 
+M._index = M
+setmetatable(M, M)
+
 function M.proc(cmd)
 	local stdout_r, stdout_w = posix.pipe()
 	local stderr_r, stderr_w = posix.pipe()

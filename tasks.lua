@@ -18,6 +18,9 @@ return {
 			_action = task2_1,
 		},
 		task2 = task2_2,
+		test = function()
+			print(require("inspect")(require("lunajson").decode('{"Hello":["lunajson",1.5]}')))
+		end,
 		_desc = "Run task2 related tasks",
 	},
 }

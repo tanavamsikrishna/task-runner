@@ -1,4 +1,4 @@
-package = "task-runner"
+package = "task_runner"
 version = "dev-1"
 source = {
    url = "*** please add URL for source tarball, zip or repository here ***"
@@ -10,7 +10,7 @@ description = {
 build = {
    type = "builtin",
    modules = {
-      ["task-runner.helpers"] = "task-runner/helpers.lua"
+      ["task_runner.helpers"] = "task_runner/helpers.lua"
    },
    install = {
         bin = {
@@ -21,5 +21,6 @@ build = {
 dependencies = {
    "lua >= 5.1",
    "argparse",
-   "luaposix"
+   "luaposix",
+   "lunajson"
 }
