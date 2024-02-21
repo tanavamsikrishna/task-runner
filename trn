@@ -1,5 +1,10 @@
 #!/usr/bin/env lua
-require("tasks")
+
+local task_file_load_success, tasks = pcall(require, "tasks")
+if not task_file_load_success then
+    print("No tasks file found found")
+    os.exit(false)
+end
 
 local argparse = require("argparse")
 
@@ -38,11 +43,45 @@ local function build_argument_parser(tasks, cmd_base)
     end
 end
 
-local parser = argparse("task-runner")
+local parser = argparse("Tasks"):add_help(false):require_command(false)
 build_argument_parser(tasks, parser)
-parser:add_help(false)
+
+local function build_help(cmd, lines, path)
+    if cmd._parent ~= nil then
+        table.insert(path, cmd._name)
+        local help_line = { table.concat(path, ".") }
+        if cmd._description then
+            table.insert(help_line, cmd._description)
+        end
+        table.insert(lines, help_line)
+    end
+    for _, child in ipairs(cmd._commands) do
+        build_help(child, lines, path)
+    end
+    table.remove(path, #path)
+end
+
+local function print_help(lines)
+    table.sort(lines, function(e1, e2)
+        return e1[1] < e2[1]
+    end)
+    local max_len = 0
+    for _, line in ipairs(lines) do
+        max_len = math.max(max_len, #line[1])
+    end
+    print("Tasks:\n")
+    for _, line in ipairs(lines) do
+        print(
+            string.format("%-" .. max_len .. "s   %s", line[1], line[2] or "")
+        )
+    end
+end
 
 local success, msg = parser:pparse()
 if (not success) then
-    print(msg)
+    io.stderr:write(msg)
+elseif next(msg) == nil then
+    local help_lines = {}
+    build_help(parser, help_lines, {})
+    print_help(help_lines)
 end

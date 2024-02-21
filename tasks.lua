@@ -10,7 +10,7 @@ local function task2_2()
 	print("task2.task2 executed!")
 end
 
-tasks = {
+return {
 	task1 = task1,
 	task2 = {
 		task1 = {

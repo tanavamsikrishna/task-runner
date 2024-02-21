@@ -9,7 +9,9 @@ description = {
 }
 build = {
    type = "builtin",
-   modules = {},
+   modules = {
+      ["task-runner.helpers"] = "task-runner/helpers.lua"
+   },
    install = {
         bin = {
             "trn"
@@ -18,5 +20,6 @@ build = {
 }
 dependencies = {
    "lua >= 5.1",
-   "argparse"
+   "argparse",
+   "luaposix"
 }
