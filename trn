@@ -2,7 +2,10 @@
 
 local task_file_load_success, tasks = pcall(require, "tasks")
 if not task_file_load_success then
-    print("No tasks file found found")
+    io.stderr:write("No tasks file found found.\n" .. tasks .. "\n")
+    os.exit(false)
+elseif type(tasks) ~= "table" then
+    io.stderr:write("Tasks file need to return a tasks table.\n")
     os.exit(false)
 end
 
