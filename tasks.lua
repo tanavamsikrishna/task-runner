@@ -1,3 +1,5 @@
+local utils = require("task_runner.helpers")
+
 local function task1()
 	print("task 1 executed!")
 end
@@ -11,6 +13,9 @@ local function task2_2()
 end
 
 return {
+	deploy = function()
+		utils.shell("luarocks build --local")
+	end,
 	task1 = task1,
 	task2 = {
 		task1 = {
@@ -22,5 +27,8 @@ return {
 			print(require("inspect")(require("lunajson").decode('{"Hello":["lunajson",1.5]}')))
 		end,
 		_desc = "Run task2 related tasks",
+		test1 = function()
+			require("helpers").shell("sleep 10")
+		end,
 	},
 }

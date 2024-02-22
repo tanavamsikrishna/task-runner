@@ -35,7 +35,7 @@ local function build_argument_parser(tasks, cmd_base)
             else
                 action = task_definition["_action"]
             end
-            cmd:action(action)
+            cmd:action(function() action() end)
         elseif type(task_definition) == "table" then
             build_argument_parser(task_definition, cmd)
         else

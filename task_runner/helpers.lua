@@ -6,6 +6,17 @@ local M = {}
 M._index = M
 setmetatable(M, M)
 
+local function exec(cmd)
+	local cmd_parts = {}
+	for e in string.gmatch(cmd, "[^%s]+") do
+		table.insert(cmd_parts, e)
+	end
+	local executable = table.remove(cmd_parts, 1)
+	local _, child_errmsg, child_exit_code = posix.execp(executable, cmd_parts)
+	io.stderr:write("Error running cmd `" .. cmd .. "`:\n\t" .. child_errmsg .. "\n")
+	os.exit(child_exit_code)
+end
+
 function M.proc(cmd)
 	local stdout_r, stdout_w = posix.pipe()
 	local stderr_r, stderr_w = posix.pipe()
@@ -19,7 +30,7 @@ function M.proc(cmd)
 		posix.close(stderr_r)
 		posix.dup2(stdout_w, posix.STDOUT_FILENO)
 		posix.dup2(stderr_w, posix.STDERR_FILENO)
-		M.exec(cmd)
+		exec(cmd)
 	else
 		-- Parent Process:
 		posix.close(stdout_w)
@@ -49,22 +60,17 @@ function M.proc(cmd)
 end
 
 function M.shell(cmd)
-	local is_success, _, code = os.execute(cmd)
-	if not is_success then
+	local is_success, exitcode, code = os.execute(cmd)
+	if is_success then
+		return
+	end
+	if exitcode == "exit" then
 		io.stderr:write("Error running cmd `" .. cmd .. "`\n")
 		os.exit(code)
+	else
+		io.stderr:write("Interrupted with signal `" .. code .. "`\n")
+		os.exit(true)
 	end
-end
-
-function M.exec(cmd)
-	local cmd_parts = {}
-	for e in string.gmatch(cmd, "[^%s]+") do
-		table.insert(cmd_parts, e)
-	end
-	local executable = table.remove(cmd_parts, 1)
-	local _, child_errmsg, child_exit_code = posix.execp(executable, cmd_parts)
-	io.stderr:write("Error running cmd `" .. cmd .. "`:\n\t" .. child_errmsg .. "\n")
-	os.exit(child_exit_code)
 end
 
 return M
