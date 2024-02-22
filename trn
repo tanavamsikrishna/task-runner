@@ -1,70 +1,63 @@
 #!/usr/bin/env lua
 
-local task_file_load_success, tasks = pcall(require, "tasks")
-if not task_file_load_success then
-    io.stderr:write("No tasks file found found.\n" .. tasks .. "\n")
-    os.exit(false)
-elseif type(tasks) ~= "table" then
-    io.stderr:write("Tasks file need to return a tasks table.\n")
-    os.exit(false)
+local function load_tasks()
+    local task_file_load_success, tasks = pcall(require, "tasks")
+    if not task_file_load_success then
+        io.stderr:write("No tasks file found found.\n" .. tasks .. "\n")
+        os.exit(false)
+    elseif type(tasks) ~= "table" then
+        io.stderr:write("Tasks file need to return a tasks table.\n")
+        os.exit(false)
+    end
+    return tasks
 end
 
-local argparse = require("argparse")
 
----@param cmd_base argparse.Parser|argparse.Command
----@return {task_path: string, task_desc: string}[]
-local function build_argument_parser(tasks, cmd_base)
-    for task_name, task_definition in pairs(tasks) do
-        if task_name == "_desc" then
-            goto continue
-        end
-
-        local desc = nil
-        if type(task_definition) == "table" and task_definition["_desc"] ~= nil then
-            desc = task_definition["_desc"]
-        end
-
-        local cmd = cmd_base:command(task_name, desc):add_help(false)
-        if
-            (type(task_definition) == "table" and type(task_definition["_action"]) == "function")
-            or (type(task_definition) == "function")
-        then
-            local action = nil
-            if type(task_definition) == "function" then
-                action = task_definition
-            else
-                action = task_definition["_action"]
-            end
-            cmd:action(function() action() end)
-        elseif type(task_definition) == "table" then
-            build_argument_parser(task_definition, cmd)
+---@param task_seq string[]
+local function execute_task(task_seq, tasks)
+    for _, task_name in ipairs(task_seq) do
+        if type(tasks) == "table" and tasks[task_name] ~= nil then
+            tasks = tasks[task_name]
         else
-            print("Task `" .. task_name .. "` is not having a valid action: " .. task_definition)
-            os.exit(false)
+            return false, "Task `" .. table.concat(task_seq, " ") .. "` not found"
         end
-        ::continue::
+    end
+
+    if type(tasks) == "function" then
+        tasks()
+    elseif type(tasks) == "table" and type(tasks._action) == "function" then
+        tasks._action()
+    elseif type(tasks) == "string" then
+        print("Running `" .. tasks .. "`")
+        require("task_runner.helpers").shell(tasks)
+    else
+        return false, "Task `" .. table.concat(task_seq, " ") .. "` is not a runnable"
+    end
+    return true
+end
+
+local function build_help(task_tree, lines, parent_path)
+    local parent_path_str = table.concat(parent_path, ".")
+    if type(task_tree) == "function" then
+        table.insert(lines, { parent_path_str, "" })
+        return
+    elseif type(task_tree) == "string" then
+        table.insert(lines, { parent_path_str, "$ " .. task_tree })
+        return
+    end
+    for k, v in pairs(task_tree) do
+        if k == "_desc" then
+            table.insert(lines, { parent_path_str, v })
+        elseif k == "_action" then
+        else
+            table.insert(parent_path, k)
+            build_help(v, lines, parent_path)
+            table.remove(parent_path, #parent_path)
+        end
     end
 end
 
-local parser = argparse("Tasks"):add_help(false):require_command(false)
-build_argument_parser(tasks, parser)
-
-local function build_help(cmd, lines, path)
-    if cmd._parent ~= nil then
-        table.insert(path, cmd._name)
-        local help_line = { table.concat(path, ".") }
-        if cmd._description then
-            table.insert(help_line, cmd._description)
-        end
-        table.insert(lines, help_line)
-    end
-    for _, child in ipairs(cmd._commands) do
-        build_help(child, lines, path)
-    end
-    table.remove(path, #path)
-end
-
-local function print_help(lines)
+local function print_two_column_table(lines)
     table.sort(lines, function(e1, e2)
         return e1[1] < e2[1]
     end)
@@ -72,19 +65,27 @@ local function print_help(lines)
     for _, line in ipairs(lines) do
         max_len = math.max(max_len, #line[1])
     end
-    print("Tasks:\n")
+    io.stdout:write("Tasks:\n")
     for _, line in ipairs(lines) do
-        print(
-            string.format("%-" .. max_len .. "s   %s", line[1], line[2] or "")
+        io.stdout:write(
+            string.format("%-" .. max_len .. "s   %s\n", line[1], line[2] or "")
         )
     end
 end
 
-local success, msg = parser:pparse()
-if (not success) then
-    io.stderr:write(msg)
-elseif next(msg) == nil then
-    local help_lines = {}
-    build_help(parser, help_lines, {})
-    print_help(help_lines)
+local function main()
+    local tasks = load_tasks()
+    if #arg == 0 then
+        local help_lines = {}
+        build_help(tasks, help_lines, {})
+        print_two_column_table(help_lines)
+    else
+        local success, msg = execute_task(arg)
+        if success then
+            return
+        end
+        io.stderr:write(msg .. "\n")
+    end
 end
+
+main()

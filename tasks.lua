@@ -16,6 +16,7 @@ return {
 	deploy = function()
 		utils.shell("luarocks build --local")
 	end,
+	format = "stylua .",
 	task1 = task1,
 	task2 = {
 		task1 = {
@@ -31,4 +32,5 @@ return {
 			require("helpers").shell("sleep 10")
 		end,
 	},
+	task3 = "echo Hello && echo hello && echo Hi && echo asdads && pwd",
 }
