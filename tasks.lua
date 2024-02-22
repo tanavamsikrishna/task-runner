@@ -13,9 +13,7 @@ local function task2_2()
 end
 
 return {
-	deploy = function()
-		utils.shell("luarocks build --local")
-	end,
+	deploy = "luarocks build --local",
 	format = "stylua .",
 	task1 = task1,
 	task2 = {

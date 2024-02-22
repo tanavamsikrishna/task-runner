@@ -12,7 +12,6 @@ local function load_tasks()
     return tasks
 end
 
-
 ---@param task_seq string[]
 local function execute_task(task_seq, tasks)
     for _, task_name in ipairs(task_seq) do
@@ -28,7 +27,7 @@ local function execute_task(task_seq, tasks)
     elseif type(tasks) == "table" and type(tasks._action) == "function" then
         tasks._action()
     elseif type(tasks) == "string" then
-        print("Running `" .. tasks .. "`")
+        io.stdout:write("Running `" .. tasks .. "`\n")
         require("task_runner.helpers").shell(tasks)
     else
         return false, "Task `" .. table.concat(task_seq, " ") .. "` is not a runnable"
@@ -80,7 +79,7 @@ local function main()
         build_help(tasks, help_lines, {})
         print_two_column_table(help_lines)
     else
-        local success, msg = execute_task(arg)
+        local success, msg = execute_task(arg, tasks)
         if success then
             return
         end
