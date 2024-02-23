@@ -14,18 +14,33 @@ end
 
 ---@param task_seq string[]
 local function execute_task(task_seq, tasks)
+    local setup_function = nil
+    if tasks._setup ~= nil then
+        setup_function = tasks._setup
+    end
     for _, task_name in ipairs(task_seq) do
         if type(tasks) == "table" and tasks[task_name] ~= nil then
+            if tasks._setup ~= nil then
+                setup_function = tasks._setup
+            end
             tasks = tasks[task_name]
         else
             return false, "Task `" .. table.concat(task_seq, " ") .. "` not found"
         end
     end
 
+    if type(tasks) == "table" and type(tasks._action) ~= nil then
+        if tasks._setup ~= nil then
+            setup_function = tasks._setup
+        end
+        tasks = tasks._action
+    end
+
     if type(tasks) == "function" then
+        if setup_function ~= nil then
+            setup_function()
+        end
         tasks()
-    elseif type(tasks) == "table" and type(tasks._action) == "function" then
-        tasks._action()
     elseif type(tasks) == "string" then
         io.stdout:write("Running `" .. tasks .. "`\n")
         require("task_runner.helpers").shell(tasks)
@@ -36,7 +51,7 @@ local function execute_task(task_seq, tasks)
 end
 
 local function build_help(task_tree, lines, parent_path)
-    local parent_path_str = table.concat(parent_path, ".")
+    local parent_path_str = table.concat(parent_path, " ")
     if type(task_tree) == "function" then
         table.insert(lines, { parent_path_str, "" })
         return
@@ -66,9 +81,7 @@ local function print_two_column_table(lines)
     end
     io.stdout:write("Tasks:\n")
     for _, line in ipairs(lines) do
-        io.stdout:write(
-            string.format("%-" .. max_len .. "s   %s\n", line[1], line[2] or "")
-        )
+        io.stdout:write(string.format("%-" .. max_len .. "s   %s\n", line[1], line[2] or ""))
     end
 end
 
