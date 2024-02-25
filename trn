@@ -3,7 +3,7 @@
 local function load_tasks()
     local task_file_load_success, tasks = pcall(require, "tasks")
     if not task_file_load_success then
-        io.stderr:write("No tasks file found found.\n" .. tasks .. "\n")
+        io.stderr:write("No tasks file found found\n")
         os.exit(false)
     elseif type(tasks) ~= "table" then
         io.stderr:write("Tasks file need to return a tasks table.\n")
@@ -12,7 +12,22 @@ local function load_tasks()
     return tasks
 end
 
+local function execute_runnable(runnable, is_empty_ok)
+    if runnable == nil then
+        return is_empty_ok
+    elseif type(runnable) == "string" then
+        io.stdout:write("Running `" .. runnable .. "`\n")
+        require("task_runner.helpers").shell(runnable)
+    elseif type(runnable) == "function" then
+        runnable()
+    else
+        return false
+    end
+    return true
+end
+
 ---@param task_seq string[]
+---@param tasks table<string, table|function|string>|string|function
 local function execute_task(task_seq, tasks)
     local setup_function = nil
     if tasks._setup ~= nil then
@@ -29,23 +44,20 @@ local function execute_task(task_seq, tasks)
         end
     end
 
-    if type(tasks) == "table" and type(tasks._action) ~= nil then
+    if type(tasks) == "table" then
         if tasks._setup ~= nil then
             setup_function = tasks._setup
         end
-        tasks = tasks._action
+        if tasks._action ~= nil then
+            tasks = tasks._action
+        end
     end
 
-    if type(tasks) == "function" then
-        if setup_function ~= nil then
-            setup_function()
-        end
-        tasks()
-    elseif type(tasks) == "string" then
-        io.stdout:write("Running `" .. tasks .. "`\n")
-        require("task_runner.helpers").shell(tasks)
-    else
-        return false, "Task `" .. table.concat(task_seq, " ") .. "` is not a runnable"
+    if not execute_runnable(setup_function, true) then
+        return false, "Setup for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
+    end
+    if not execute_runnable(tasks, false) then
+        return false, "Action for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
     end
     return true
 end
@@ -62,7 +74,9 @@ local function build_help(task_tree, lines, parent_path)
     for k, v in pairs(task_tree) do
         if k == "_desc" then
             table.insert(lines, { parent_path_str, v })
-        elseif k == "_action" then
+        elseif k == "_action" and type(v) == "string" then
+            table.insert(lines, { parent_path_str, "$ " .. v })
+        elseif k == "_action" or k == "_setup" then
         else
             table.insert(parent_path, k)
             build_help(v, lines, parent_path)
@@ -93,10 +107,9 @@ local function main()
         print_two_column_table(help_lines)
     else
         local success, msg = execute_task(arg, tasks)
-        if success then
-            return
+        if not success then
+            io.stderr:write(msg .. "\n")
         end
-        io.stderr:write(msg .. "\n")
     end
 end
 

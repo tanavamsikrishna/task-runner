@@ -19,6 +19,10 @@ build = {
     }
 }
 dependencies = {
-   "lua >= 5.1",
-   "luaposix",
+   platforms = {
+      unix = {
+         "lua >= 5.1",
+         "luaposix",
+      },
+   }
 }

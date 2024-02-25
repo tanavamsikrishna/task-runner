@@ -15,7 +15,7 @@ end
 return {
     deploy = "luarocks build --local",
     format = "stylua .",
-    ["1"] = task1,
+    ["local"] = task1,
     task2 = {
         _setup = function()
             print("Setup for task2")
@@ -30,8 +30,17 @@ return {
         end,
         _desc = "Run task2 related tasks",
         test1 = function()
-            require("helpers").shell("sleep 10")
+            utils.shell("sleep 10")
         end,
     },
-    task3 = { _action = "echo Hello && echo hello && echo Hi && echo asdads && pwd" },
+    task3 = {
+        _setup = function()
+            utils.shell("echo setup run")
+        end,
+        _action = "echo Hello",
+    },
+    task4 = {
+        _setup = "echo setup",
+        _action = "echo Hello",
+    },
 }
