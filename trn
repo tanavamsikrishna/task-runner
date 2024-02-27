@@ -93,7 +93,7 @@ local function print_two_column_table(lines)
     for _, line in ipairs(lines) do
         max_len = math.max(max_len, #line[1])
     end
-    io.stdout:write("Tasks:\n")
+    io.stdout:write("Tasks:\n\n")
     for _, line in ipairs(lines) do
         io.stdout:write(string.format("%-" .. max_len .. "s   %s\n", line[1], line[2] or ""))
     end
@@ -105,6 +105,46 @@ local function main()
         local help_lines = {}
         build_help(tasks, help_lines, {})
         print_two_column_table(help_lines)
+    elseif arg[1] == "--completions" then
+        table.remove(arg, 1)
+        table.remove(arg, 1)
+        for _, v in ipairs(arg) do
+            if v:len() ~= 0 then
+                if type(tasks) ~= "table" then
+                    return
+                end
+                tasks = tasks[v]
+                
+            end
+        end
+        if type(tasks) ~= "table" then
+            return
+        end
+        for task_name, _ in pairs(tasks) do
+            if string.match(task_name, "^_") ~= nil then
+                goto continue
+            end
+            io.stdout:write(task_name)
+            local desc = nil
+            if type(tasks[task_name]) == "table" and tasks[task_name]._desc ~= nil then
+                desc = tasks[task_name]._desc
+            elseif type(tasks[task_name]) == "string" then
+                desc = tasks[task_name]
+            end
+            if desc then
+                io.stdout:write("\t" .. desc)
+            end
+            io.stdout:write("\n")
+            ::continue::
+        end
+    elseif arg[1] == "--completions-script" then
+        print([[
+function get_trn_completions
+    trn --completions (commandline | string split " ")
+end
+
+complete -c trn -a '(get_trn_completions)' -f
+        ]])
     else
         local success, msg = execute_task(arg, tasks)
         if not success then
