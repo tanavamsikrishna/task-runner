@@ -12,14 +12,12 @@ local function load_tasks()
     return tasks
 end
 
-local function execute_runnable(runnable, is_empty_ok)
-    if runnable == nil then
-        return is_empty_ok
-    elseif type(runnable) == "string" then
+local function execute_runnable(runnable, prog_args)
+    if type(runnable) == "string" then
         io.stdout:write("Running `" .. runnable .. "`\n")
         require("task_runner.helpers").shell(runnable)
     elseif type(runnable) == "function" then
-        runnable()
+        runnable(prog_args)
     else
         return false
     end
@@ -28,7 +26,8 @@ end
 
 ---@param task_seq string[]
 ---@param tasks table<string, table|function|string>|string|function
-local function execute_task(task_seq, tasks)
+---@param prog_args string[]
+local function execute_task(task_seq, tasks, prog_args)
     local setup_function = nil
     if tasks._setup ~= nil then
         setup_function = tasks._setup
@@ -53,10 +52,12 @@ local function execute_task(task_seq, tasks)
         end
     end
 
-    if not execute_runnable(setup_function, true) then
-        return false, "Setup for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
+    if setup_function then
+        if not execute_runnable(setup_function) then
+            return false, "Setup for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
+        end
     end
-    if not execute_runnable(tasks, false) then
+    if not execute_runnable(tasks, prog_args) then
         return false, "Action for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
     end
     return true
@@ -99,6 +100,21 @@ local function print_two_column_table(lines)
     end
 end
 
+--@param cmd_line_args string[]
+local function split_arguments(cmd_line_args)
+    local task_seq = {}
+    local prog_args = {}
+    local current_arg_type = task_seq
+    for _, v in ipairs(cmd_line_args) do
+        if v == "--" then
+            current_arg_type = prog_args
+        else
+            table.insert(current_arg_type, v)
+        end
+    end
+    return task_seq, prog_args
+end
+
 local function main()
     local tasks = load_tasks()
     if #arg == 0 then
@@ -114,7 +130,6 @@ local function main()
                     return
                 end
                 tasks = tasks[v]
-                
             end
         end
         if type(tasks) ~= "table" then
@@ -146,7 +161,8 @@ end
 complete -c trn -a '(get_trn_completions)' -f
         ]])
     else
-        local success, msg = execute_task(arg, tasks)
+        local task_seq, prog_args = split_arguments(arg)
+        local success, msg = execute_task(task_seq, tasks, prog_args)
         if not success then
             io.stderr:write(msg .. "\n")
         end
