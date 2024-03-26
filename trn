@@ -116,6 +116,17 @@ local function split_arguments(cmd_line_args)
 end
 
 local function main()
+    if arg[1] == "--completions-script" then
+        print([[
+function get_trn_completions
+trn --completions (commandline | string split " ")
+end
+
+complete -c trn -a '(get_trn_completions)' -f
+    ]])
+        return
+    end
+
     local tasks = load_tasks()
     if #arg == 0 then
         local help_lines = {}
@@ -152,14 +163,6 @@ local function main()
             io.stdout:write("\n")
             ::continue::
         end
-    elseif arg[1] == "--completions-script" then
-        print([[
-function get_trn_completions
-    trn --completions (commandline | string split " ")
-end
-
-complete -c trn -a '(get_trn_completions)' -f
-        ]])
     else
         local task_seq, prog_args = split_arguments(arg)
         local success, msg = execute_task(task_seq, tasks, prog_args)
