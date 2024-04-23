@@ -14,7 +14,8 @@ end
 
 local function execute_runnable(runnable, prog_args)
     if type(runnable) == "string" then
-        io.stdout:write("Running `" .. runnable .. "`\n")
+        local colors = require("term.colors")
+        io.stdout:write(colors.dim .. "Running `" .. runnable .. colors.reset .. "`\n")
         require("task_runner.helpers").shell(runnable)
     elseif type(runnable) == "function" then
         runnable(prog_args)
