@@ -1,176 +1,177 @@
 #!/usr/bin/env lua
 
 local function load_tasks()
-    local task_file_load_success, tasks = pcall(require, "tasks")
-    if not task_file_load_success then
-        io.stderr:write("Error loading tasks file:\n" .. tasks .. "\n")
-        os.exit(false)
-    elseif type(tasks) ~= "table" then
-        io.stderr:write("Tasks file need to return a tasks table.\n")
-        os.exit(false)
-    end
-    return tasks
+  local task_file_load_success, tasks = pcall(require, 'tasks')
+  if not task_file_load_success then
+    io.stderr:write('Error loading tasks file:\n' .. tasks .. '\n')
+    os.exit(false)
+  elseif type(tasks) ~= 'table' then
+    io.stderr:write 'Tasks file need to return a tasks table.\n'
+    os.exit(false)
+  end
+  return tasks
 end
 
 local function execute_runnable(runnable, prog_args)
-    if type(runnable) == "string" then
-        local colors = require("term.colors")
-        io.stdout:write(colors.dim .. "Running `" .. runnable .. colors.reset .. "`\n")
-        require("task_runner.helpers").shell(runnable)
-    elseif type(runnable) == "function" then
-        runnable(prog_args)
-    else
-        return false
-    end
-    return true
+  if type(runnable) == 'string' then
+    local colors = require 'term.colors'
+    io.stdout:write(colors.dim .. 'Running `' .. runnable .. colors.reset .. '`\n')
+    require('task_runner.helpers').shell(runnable)
+  elseif type(runnable) == 'function' then
+    runnable(prog_args)
+  else
+    return false
+  end
+  return true
 end
 
 ---@param task_seq string[]
 ---@param tasks table<string, table|function|string>|string|function
 ---@param prog_args string[]
 local function execute_task(task_seq, tasks, prog_args)
-    local setup_function = nil
-    if tasks._setup ~= nil then
+  local setup_function = nil
+  if tasks._setup ~= nil then
+    setup_function = tasks._setup
+  end
+  for _, task_name in ipairs(task_seq) do
+    if type(tasks) == 'table' and tasks[task_name] ~= nil then
+      if tasks._setup ~= nil then
         setup_function = tasks._setup
+      end
+      tasks = tasks[task_name]
+    else
+      return false, 'Task `' .. table.concat(task_seq, ' ') .. '` not found'
     end
-    for _, task_name in ipairs(task_seq) do
-        if type(tasks) == "table" and tasks[task_name] ~= nil then
-            if tasks._setup ~= nil then
-                setup_function = tasks._setup
-            end
-            tasks = tasks[task_name]
-        else
-            return false, "Task `" .. table.concat(task_seq, " ") .. "` not found"
-        end
-    end
+  end
 
-    if type(tasks) == "table" then
-        if tasks._setup ~= nil then
-            setup_function = tasks._setup
-        end
-        if tasks._action ~= nil then
-            tasks = tasks._action
-        end
+  if type(tasks) == 'table' then
+    if tasks._setup ~= nil then
+      setup_function = tasks._setup
     end
+    if tasks._action ~= nil then
+      tasks = tasks._action
+    end
+  end
 
-    if setup_function then
-        if not execute_runnable(setup_function) then
-            return false, "Setup for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
-        end
+  if setup_function then
+    if not execute_runnable(setup_function) then
+      return false, 'Setup for `' .. table.concat(task_seq, ' ') .. '` is not a runnable'
     end
-    if not execute_runnable(tasks, prog_args) then
-        return false, "Action for `" .. table.concat(task_seq, " ") .. "` is not a runnable"
-    end
-    return true
+  end
+  if not execute_runnable(tasks, prog_args) then
+    return false, 'Action for `' .. table.concat(task_seq, ' ') .. '` is not a runnable'
+  end
+  return true
 end
 
 local function build_help(task_tree, lines, parent_path)
-    local parent_path_str = table.concat(parent_path, " ")
-    if type(task_tree) == "function" then
-        table.insert(lines, { parent_path_str, "" })
-        return
-    elseif type(task_tree) == "string" then
-        table.insert(lines, { parent_path_str, "$ " .. task_tree })
-        return
+  -- local colors = require 'term.colors'
+  local parent_path_str = table.concat(parent_path, ' ')
+  if type(task_tree) == 'function' then
+    table.insert(lines, { parent_path_str, '' })
+    return
+  elseif type(task_tree) == 'string' then
+    table.insert(lines, { parent_path_str, '$ ' .. task_tree })
+    return
+  end
+  for k, v in pairs(task_tree) do
+    if k == '_desc' then
+      table.insert(lines, { parent_path_str, v })
+    elseif k == '_action' and type(v) == 'string' then
+      table.insert(lines, { parent_path_str, '$ ' .. v })
+    elseif k == '_action' or k == '_setup' then
+    else
+      table.insert(parent_path, k)
+      build_help(v, lines, parent_path)
+      table.remove(parent_path, #parent_path)
     end
-    for k, v in pairs(task_tree) do
-        if k == "_desc" then
-            table.insert(lines, { parent_path_str, v })
-        elseif k == "_action" and type(v) == "string" then
-            table.insert(lines, { parent_path_str, "$ " .. v })
-        elseif k == "_action" or k == "_setup" then
-        else
-            table.insert(parent_path, k)
-            build_help(v, lines, parent_path)
-            table.remove(parent_path, #parent_path)
-        end
-    end
+  end
 end
 
 local function print_two_column_table(lines)
-    table.sort(lines, function(e1, e2)
-        return e1[1] < e2[1]
-    end)
-    local max_len = 0
-    for _, line in ipairs(lines) do
-        max_len = math.max(max_len, #line[1])
-    end
-    io.stdout:write("Tasks:\n\n")
-    for _, line in ipairs(lines) do
-        io.stdout:write(string.format("%-" .. max_len .. "s   %s\n", line[1], line[2] or ""))
-    end
+  table.sort(lines, function(e1, e2)
+    return e1[1] < e2[1]
+  end)
+  local max_len = 0
+  for _, line in ipairs(lines) do
+    max_len = math.max(max_len, #line[1])
+  end
+  io.stdout:write 'Tasks:\n\n'
+  for _, line in ipairs(lines) do
+    io.stdout:write(string.format('%-' .. max_len .. 's   %s\n', line[1], line[2] or ''))
+  end
 end
 
 --@param cmd_line_args string[]
 local function split_arguments(cmd_line_args)
-    local task_seq = {}
-    local prog_args = {}
-    local current_arg_type = task_seq
-    for _, v in ipairs(cmd_line_args) do
-        if v == "--" then
-            current_arg_type = prog_args
-        else
-            table.insert(current_arg_type, v)
-        end
+  local task_seq = {}
+  local prog_args = {}
+  local current_arg_type = task_seq
+  for _, v in ipairs(cmd_line_args) do
+    if v == '--' then
+      current_arg_type = prog_args
+    else
+      table.insert(current_arg_type, v)
     end
-    return task_seq, prog_args
+  end
+  return task_seq, prog_args
 end
 
 local function main()
-    if arg[1] == "--completions-script" then
-        print([[
+  if arg[1] == '--completions-script' then
+    print [[
 function get_trn_completions
 trn --completions (commandline | string split " ")
 end
 
 complete -c trn -a '(get_trn_completions)' -f
-    ]])
-        return
-    end
+    ]]
+    return
+  end
 
-    local tasks = load_tasks()
-    if #arg == 0 then
-        local help_lines = {}
-        build_help(tasks, help_lines, {})
-        print_two_column_table(help_lines)
-    elseif arg[1] == "--completions" then
-        table.remove(arg, 1)
-        table.remove(arg, 1)
-        for _, v in ipairs(arg) do
-            if v:len() ~= 0 then
-                if type(tasks) ~= "table" then
-                    return
-                end
-                tasks = tasks[v]
-            end
+  local tasks = load_tasks()
+  if #arg == 0 then
+    local help_lines = {}
+    build_help(tasks, help_lines, {})
+    print_two_column_table(help_lines)
+  elseif arg[1] == '--completions' then
+    table.remove(arg, 1)
+    table.remove(arg, 1)
+    for _, v in ipairs(arg) do
+      if v:len() ~= 0 then
+        if type(tasks) ~= 'table' then
+          return
         end
-        if type(tasks) ~= "table" then
-            return
-        end
-        for task_name, _ in pairs(tasks) do
-            if string.match(task_name, "^_") ~= nil then
-                goto continue
-            end
-            io.stdout:write(task_name)
-            local desc = nil
-            if type(tasks[task_name]) == "table" and tasks[task_name]._desc ~= nil then
-                desc = tasks[task_name]._desc
-            elseif type(tasks[task_name]) == "string" then
-                desc = tasks[task_name]
-            end
-            if desc then
-                io.stdout:write("\t" .. desc)
-            end
-            io.stdout:write("\n")
-            ::continue::
-        end
-    else
-        local task_seq, prog_args = split_arguments(arg)
-        local success, msg = execute_task(task_seq, tasks, prog_args)
-        if not success then
-            io.stderr:write(msg .. "\n")
-        end
+        tasks = tasks[v]
+      end
     end
+    if type(tasks) ~= 'table' then
+      return
+    end
+    for task_name, _ in pairs(tasks) do
+      if string.match(task_name, '^_') ~= nil then
+        goto continue
+      end
+      io.stdout:write(task_name)
+      local desc = nil
+      if type(tasks[task_name]) == 'table' and tasks[task_name]._desc ~= nil then
+        desc = tasks[task_name]._desc
+      elseif type(tasks[task_name]) == 'string' then
+        desc = tasks[task_name]
+      end
+      if desc then
+        io.stdout:write('\t' .. desc)
+      end
+      io.stdout:write '\n'
+      ::continue::
+    end
+  else
+    local task_seq, prog_args = split_arguments(arg)
+    local success, msg = execute_task(task_seq, tasks, prog_args)
+    if not success then
+      io.stderr:write(msg .. '\n')
+    end
+  end
 end
 
 main()
