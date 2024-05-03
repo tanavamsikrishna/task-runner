@@ -43,7 +43,10 @@ return {
     _setup = 'echo setup',
     _action = 'echo Hello',
   },
-  task5 = function(prog_args)
-    print(table.concat(prog_args, '|'))
-  end,
+  task5 = {
+    _action = function(prog_args)
+      print(table.concat(prog_args, '|'))
+    end,
+    _desc = 'Just a regular task5',
+  },
 }
