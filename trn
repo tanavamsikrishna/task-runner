@@ -65,20 +65,22 @@ local function execute_task(task_seq, tasks, prog_args)
 end
 
 local function build_help(task_tree, lines, parent_path)
-  -- local colors = require 'term.colors'
+  local colors = require 'term.colors'
+  local code_fg = colors.yellow
+  local doc_fg = colors.blue
   local parent_path_str = table.concat(parent_path, ' ')
   if type(task_tree) == 'function' then
     table.insert(lines, { parent_path_str, '' })
     return
   elseif type(task_tree) == 'string' then
-    table.insert(lines, { parent_path_str, '$ ' .. task_tree })
+    table.insert(lines, { parent_path_str, code_fg .. '$ ' .. task_tree .. colors.reset })
     return
   end
   for k, v in pairs(task_tree) do
     if k == '_desc' then
-      table.insert(lines, { parent_path_str, v })
+      table.insert(lines, { parent_path_str, doc_fg .. v .. colors.reset })
     elseif k == '_action' and type(v) == 'string' then
-      table.insert(lines, { parent_path_str, '$ ' .. v })
+      table.insert(lines, { parent_path_str, code_fg .. '$ ' .. v .. colors.reset })
     elseif k == '_action' or k == '_setup' then
     else
       table.insert(parent_path, k)
