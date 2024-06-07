@@ -16,6 +16,9 @@ return {
   deploy = 'luarocks build --local',
   format = 'stylua .',
   ['local'] = task1,
+  fn_with_args = function(arg1, arg2)
+    print(arg1, arg2)
+  end,
   task2 = {
     _setup = function()
       print('Setup for task2')

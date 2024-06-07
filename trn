@@ -18,7 +18,7 @@ local function execute_runnable(runnable, prog_args)
     io.stdout:write(colors.dim .. 'Running `' .. runnable .. colors.reset .. '`\n')
     require('task_runner.helpers').shell(runnable)
   elseif type(runnable) == 'function' then
-    runnable(prog_args)
+    runnable(table.unpack(prog_args))
   else
     return false
   end
