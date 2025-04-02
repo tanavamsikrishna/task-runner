@@ -6,7 +6,7 @@ local function load_tasks()
     io.stderr:write('Error loading tasks file:\n' .. tasks .. '\n')
     os.exit(false)
   elseif type(tasks) ~= 'table' then
-    io.stderr:write 'Tasks file need to return a tasks table.\n'
+    io.stderr:write('Tasks file need to return a tasks table.\n')
     os.exit(false)
   end
   return tasks
@@ -14,8 +14,8 @@ end
 
 local function execute_runnable(runnable, prog_args)
   if type(runnable) == 'string' then
-    local colors = require 'term.colors'
-    io.stdout:write(colors.dim .. 'Running `' .. runnable .. colors.reset .. '`\n')
+    local colors = require('term.colors')
+    io.stderr:write(colors.dim .. 'Running `' .. runnable .. colors.reset .. '`\n')
     require('task_runner.helpers').shell(runnable)
   elseif type(runnable) == 'function' then
     runnable(table.unpack(prog_args))
@@ -65,7 +65,7 @@ local function execute_task(task_seq, tasks, prog_args)
 end
 
 local function build_help(task_tree, lines, parent_path)
-  local colors = require 'term.colors'
+  local colors = require('term.colors')
   local code_fg = colors.white
   local doc_fg = string.char(27) .. '[3m' .. colors.blue
   local parent_path_str = table.concat(parent_path, ' ')
@@ -97,7 +97,7 @@ local function print_two_column_table(lines)
   for _, line in ipairs(lines) do
     max_len = math.max(max_len, #line[1])
   end
-  io.stdout:write 'Tasks:\n\n'
+  io.stdout:write('Tasks:\n\n')
   for _, line in ipairs(lines) do
     io.stdout:write(string.format('%-' .. max_len .. 's   %s\n', line[1], line[2] or ''))
   end
@@ -120,13 +120,13 @@ end
 
 local function main()
   if arg[1] == '--completions-script' then
-    print [[
+    print([[
 function get_trn_completions
 trn --completions (commandline | string split " ")
 end
 
 complete -c trn -a '(get_trn_completions)' -f
-    ]]
+    ]])
     return
   end
 
@@ -163,7 +163,7 @@ complete -c trn -a '(get_trn_completions)' -f
       if desc then
         io.stdout:write('\t' .. desc)
       end
-      io.stdout:write '\n'
+      io.stdout:write('\n')
       ::continue::
     end
   else
