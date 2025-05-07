@@ -136,36 +136,58 @@ complete -c trn -a '(get_trn_completions)' -f
     build_help(tasks, help_lines, {})
     print_two_column_table(help_lines)
   elseif arg[1] == '--completions' then
-  -- Rewrite this elseif block so that is can autocomplete incompletely typed words ai!
-    table.remove(arg, 1)
-    table.remove(arg, 1)
-    for _, v in ipairs(arg) do
-      if v:len() ~= 0 then
-        if type(tasks) ~= 'table' then
-          return
-        end
-        tasks = tasks[v]
+    table.remove(arg, 1) -- remove '--completions'
+    table.remove(arg, 1) -- remove the program name (e.g., 'trn')
+
+    local current_tasks_node = tasks -- Start at the root of the tasks table
+    local partial_word = ""
+
+    -- If there are arguments left after removing --completions and program name,
+    -- the last one is the word to be completed.
+    -- All preceding arguments form the path to the current task level.
+    if #arg > 0 then
+      partial_word = arg[#arg]
+      table.remove(arg, #arg) -- 'arg' now only contains the path segments
+    end
+
+    -- Navigate to the correct level in the tasks table based on the path segments
+    for _, path_segment in ipairs(arg) do
+      if type(current_tasks_node) == 'table' and current_tasks_node[path_segment] ~= nil then
+        current_tasks_node = current_tasks_node[path_segment]
+      else
+        -- Invalid path segment, or navigated to a non-table item.
+        -- No further completions possible from here.
+        return
       end
     end
-    if type(tasks) ~= 'table' then
+
+    -- We must be at a table node to list sub-tasks.
+    if type(current_tasks_node) ~= 'table' then
       return
     end
-    for task_name, _ in pairs(tasks) do
-      if string.match(task_name, '^_') ~= nil then
-        goto continue
+
+    -- List tasks at the current_tasks_node that start with partial_word
+    for task_name, task_value in pairs(current_tasks_node) do
+      -- Ignore internal keys like _desc, _action, _setup (those starting with '_')
+      if not string.match(task_name, '^_') then
+        -- Match if partial_word is empty (list all) or if task_name starts with partial_word
+        if #partial_word == 0 or string.sub(task_name, 1, #partial_word) == partial_word then
+          io.stdout:write(task_name)
+          local desc = nil
+          if type(task_value) == 'table' and task_value._desc ~= nil then
+            desc = task_value._desc
+          elseif type(task_value) == 'string' then
+            -- If the task_value is a string, it's the command itself.
+            -- This can serve as a simple description.
+            desc = task_value
+          end
+          -- Note: function tasks without a _desc in a table wrapper won't have a description printed here.
+          if desc then
+            io.stdout:write('\t' .. desc)
+          end
+          io.stdout:write('\n')
+        end
       end
-      io.stdout:write(task_name)
-      local desc = nil
-      if type(tasks[task_name]) == 'table' and tasks[task_name]._desc ~= nil then
-        desc = tasks[task_name]._desc
-      elseif type(tasks[task_name]) == 'string' then
-        desc = tasks[task_name]
-      end
-      if desc then
-        io.stdout:write('\t' .. desc)
-      end
-      io.stdout:write('\n')
-      ::continue::
     end
   else
     local task_seq, prog_args = split_arguments(arg)
