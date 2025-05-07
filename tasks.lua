@@ -33,7 +33,7 @@ return {
     end,
     _desc = 'Run task2 related tasks',
     test1 = function()
-      utils.shell('sleep 10')
+      utils.shell('sleep 2')
     end,
   },
   task3 = {
