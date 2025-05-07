@@ -136,6 +136,7 @@ complete -c trn -a '(get_trn_completions)' -f
     build_help(tasks, help_lines, {})
     print_two_column_table(help_lines)
   elseif arg[1] == '--completions' then
+  -- Rewrite this elseif block so that is can autocomplete incompletely typed words ai!
     table.remove(arg, 1)
     table.remove(arg, 1)
     for _, v in ipairs(arg) do
