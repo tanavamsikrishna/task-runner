@@ -129,11 +129,11 @@ local function print_completions_script()
 end
 
 local function process_shell_completions(tasks)
-  table.remove(arg, 1)             -- remove '--completions'
-  table.remove(arg, 1)             -- remove the program name (e.g., 'trn')
+  table.remove(arg, 1) -- remove '--completions'
+  table.remove(arg, 1) -- remove the program name (e.g., 'trn')
 
   local current_tasks_node = tasks -- Start at the root of the tasks table
-  local partial_word = ""
+  local partial_word = ''
 
   -- If there are arguments left after removing --completions and program name,
   -- the last one is the word to be completed.
