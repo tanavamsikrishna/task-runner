@@ -120,11 +120,7 @@ end
 
 local function print_completions_script()
   print([[
-    function get_trn_completions
-    trn --completions (commandline | string split " ")
-    end
-
-    complete -c trn -a '(get_trn_completions)' -f
+complete -c trn -a '(trn --completions (commandline | string split " "))' -f
         ]])
 end
 
