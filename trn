@@ -118,10 +118,12 @@ local function split_arguments(cmd_line_args)
   return task_seq, prog_args
 end
 
-local function print_completions_script()
-  print([[
+local function print_completions_script(shell)
+  if shell == 'fish' then
+    print([[
 complete -c trn -a '(trn --completions (commandline | string split " "))' -f
         ]])
+  end
 end
 
 local function process_shell_completions(tasks)
@@ -182,7 +184,7 @@ end
 
 local function main()
   if arg[1] == '--completions-script' then
-    print_completions_script()
+    print_completions_script(arg[2])
     return
   end
 
