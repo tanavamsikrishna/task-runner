@@ -6,6 +6,7 @@ local M = {}
 M._index = M
 setmetatable(M, M)
 
+-- Replaces the current process with a new one
 local function exec(cmd)
   local cmd_parts = {}
   for e in string.gmatch(cmd, '[^%s]+') do
@@ -17,6 +18,7 @@ local function exec(cmd)
   os.exit(child_exit_code)
 end
 
+-- Runs a command and returns the stdout, stderr, exit_code
 function M.proc(cmd)
   local stdout_r, stdout_w = posix.pipe()
   local stderr_r, stderr_w = posix.pipe()
