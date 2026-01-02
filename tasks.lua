@@ -13,7 +13,7 @@ local function task2_2()
 end
 
 return {
-  deploy = 'luarocks make --local',
+  deploy = 'luarocks make',
   format = 'stylua .',
   ['local'] = task1,
   fn_with_args = function(arg1, arg2)
