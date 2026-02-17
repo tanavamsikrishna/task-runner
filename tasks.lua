@@ -13,7 +13,7 @@ local function task2_2()
 end
 
 return {
-  deploy = 'luarocks make',
+  deploy = 'luarocks --lua-version 5.1 make --tree=/opt/homebrew',
   format = 'stylua .',
   ['local'] = task1,
   fn_with_args = function(arg1, arg2)
