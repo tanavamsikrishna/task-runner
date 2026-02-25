@@ -12,9 +12,6 @@ local function task2_2()
   print('task2.task2 executed!')
 end
 
-require('toml')
-print('Loaded toml')
-
 return {
   deploy = 'luarocks --lua-version=' .. _VERSION:match('%d+%.%d+') .. ' make --global',
   format = 'stylua .',

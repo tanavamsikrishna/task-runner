@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "workspace": {
+    "library": [
+      "./lua_modules/lib/lua/5.4/",
+      "./lua_modules/share/lua/5.4/",
+      "/Users/vamsi/.luastubs",
+      "/opt/homebrew/lib/lua/5.4",
+      "/opt/homebrew/share/lua/5.4"
+    ]
+  },
+  "diagnostics": {
+    "globals": []
+  },
+  "runtime": {
+    "version": "Lua 5.4",
+    "path": ["?.lua", "?/init.lua"]
+  }
+}
