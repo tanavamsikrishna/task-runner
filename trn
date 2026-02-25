@@ -1,4 +1,4 @@
-#!/usr/bin/env lua
+#!/usr/bin/env lua-5.4
 require('task_runner._set_paths')
 
 local function load_tasks()
