@@ -16,7 +16,7 @@ require('toml')
 print('Loaded toml')
 
 return {
-  deploy = 'luarocks --lua-version 5.1 make --local',
+  deploy = 'luarocks --lua-version=' .. _VERSION:match('%d+%.%d+') .. ' make --global',
   format = 'stylua .',
   ['local'] = task1,
   fn_with_args = function(arg1, arg2)

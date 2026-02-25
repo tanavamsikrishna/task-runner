@@ -11,7 +11,7 @@ build = {
   type = 'builtin',
   modules = {
     ['task_runner.helpers'] = 'task_runner/helpers.lua',
-    ['task_runner.set_paths'] = 'task_runner/set_paths.lua',
+    ['task_runner._set_paths'] = 'task_runner/_set_paths.lua',
   },
   install = {
     bin = {
@@ -22,7 +22,7 @@ build = {
 dependencies = {
   platforms = {
     unix = {
-      'lua >= 5.1, < 5.2',
+      'lua >= 5.4',
       'luaposix',
       'lua-term',
       'inspect',

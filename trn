@@ -1,5 +1,5 @@
-#!/usr/bin/env luajit
-require('task_runner.set_paths')
+#!/usr/bin/env lua
+require('task_runner._set_paths')
 
 local function load_tasks()
   -- Try to load tasks.lua from current directory
