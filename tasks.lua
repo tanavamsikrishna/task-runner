@@ -12,8 +12,11 @@ local function task2_2()
   print('task2.task2 executed!')
 end
 
+require('toml')
+print('Loaded toml')
+
 return {
-  deploy = 'luarocks --lua-version 5.1 make --tree=/opt/homebrew',
+  deploy = 'luarocks --lua-version 5.1 make --local',
   format = 'stylua .',
   ['local'] = task1,
   fn_with_args = function(arg1, arg2)

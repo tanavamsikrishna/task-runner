@@ -1,5 +1,6 @@
 #!/usr/bin/env luajit
-pcall(require, 'set_paths')
+require('task_runner.set_paths')
+
 local function load_tasks()
   -- Try to load tasks.lua from current directory
   local current_dir = os.getenv('PWD') or '.'
