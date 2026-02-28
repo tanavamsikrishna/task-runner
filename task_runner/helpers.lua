@@ -1,6 +1,8 @@
 -- Credits: http://luaposix.github.io/luaposix/examples/dup2.lua.html
 local posix = require('posix.unistd')
 
+local READ_BUF_SIZE = 1024
+
 local M = {}
 
 M._index = M
@@ -41,7 +43,7 @@ function M.proc(cmd)
     local function read_stream(fd)
       local msg_parts = {}
       while true do
-        local outs, read_errmsg = posix.read(fd, 1024)
+        local outs, read_errmsg = posix.read(fd, READ_BUF_SIZE)
         assert(outs ~= nil, read_errmsg)
         if outs == '' then
           break
