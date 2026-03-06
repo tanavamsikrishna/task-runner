@@ -131,18 +131,51 @@ complete -c trn -a '(trn --completions (commandline | string split " "))' -f
 end
 
 local function process_shell_completions(tasks)
+  -- Helper to trim whitespace
+  local function trim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
+
   table.remove(arg, 1) -- remove '--completions'
-  table.remove(arg, 1) -- remove the program name (e.g., 'trn')
 
   local current_tasks_node = tasks -- Start at the root of the tasks table
   local partial_word = ''
 
-  -- If there are arguments left after removing --completions and program name,
-  -- the last one is the word to be completed.
-  -- All preceding arguments form the path to the current task level.
+  -- Trim whitespace from all arguments (handles "task2 " with trailing space)
+  for i = 1, #arg do
+    arg[i] = trim(arg[i])
+  end
+
+  -- Handle optional program name (present when called from fish completion)
+  -- Fish passes: trn --completions trn task1 task2
+  -- Nushell passes: trn --completions task1 task2
+  -- Check if first remaining arg is a task at root level
+  if #arg > 0 and type(current_tasks_node) == 'table' and current_tasks_node[arg[1]] ~= nil then
+    -- First arg is a task, so there's no program name - navigate into it
+    local value = current_tasks_node[arg[1]]
+    if type(value) == 'table' then
+      current_tasks_node = value
+    end
+    table.remove(arg, 1) -- remove the task name
+  elseif #arg > 0 then
+    -- First arg is not a task, assume it's the program name - remove it
+    table.remove(arg, 1)
+  end
+
+  -- After removing program name (if any), arg now contains task path segments
+  -- The last segment is the partial word to complete
+  -- All preceding segments form the path to the current task level
   if #arg > 0 then
     partial_word = arg[#arg]
     table.remove(arg, #arg) -- 'arg' now only contains the path segments
+    
+    -- Check if partial_word is a complete task name (for tab completion after "task2 ")
+    -- If so, navigate into it
+    if type(current_tasks_node) == 'table' and current_tasks_node[partial_word] ~= nil then
+      local value = current_tasks_node[partial_word]
+      if type(value) == 'table' then
+        current_tasks_node = value
+        partial_word = ''
+      end
+    end
   end
 
   -- Navigate to the correct level in the tasks table based on the path segments
