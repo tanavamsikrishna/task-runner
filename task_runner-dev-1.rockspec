@@ -20,13 +20,8 @@ build = {
   },
 }
 dependencies = {
-  platforms = {
-    unix = {
-      'lua >= 5.4',
-      'luaposix',
-      'lua-term',
-      'inspect',
-      'lunajson',
-    },
-  },
+  'luaposix',
+  'lua-term',
+  'inspect',
+  'lunajson',
 }

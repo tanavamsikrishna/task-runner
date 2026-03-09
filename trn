@@ -1,4 +1,4 @@
-#!/usr/bin/env lua-5.4
+#!/usr/bin/env lua
 require('task_runner._set_paths')
 
 local function load_tasks()
@@ -22,7 +22,7 @@ local function execute_runnable(runnable, prog_args)
     io.stderr:write(colors.dim .. 'Running `' .. runnable .. colors.reset .. '`\n')
     require('task_runner.helpers').shell(runnable)
   elseif type(runnable) == 'function' then
-    runnable((table.unpack or unpack)(prog_args or {}))
+    runnable(table.unpack(prog_args or {}))
   else
     return false
   end
@@ -132,7 +132,9 @@ end
 
 local function process_shell_completions(tasks)
   -- Helper to trim whitespace
-  local function trim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
+  local function trim(s)
+    return (s:gsub('^%s+', ''):gsub('%s+$', ''))
+  end
 
   table.remove(arg, 1) -- remove '--completions'
 
@@ -166,7 +168,7 @@ local function process_shell_completions(tasks)
   if #arg > 0 then
     partial_word = arg[#arg]
     table.remove(arg, #arg) -- 'arg' now only contains the path segments
-    
+
     -- Check if partial_word is a complete task name (for tab completion after "task2 ")
     -- If so, navigate into it
     if type(current_tasks_node) == 'table' and current_tasks_node[partial_word] ~= nil then
