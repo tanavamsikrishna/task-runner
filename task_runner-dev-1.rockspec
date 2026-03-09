@@ -22,6 +22,4 @@ build = {
 dependencies = {
   'luaposix',
   'lua-term',
-  'inspect',
-  'lunajson',
 }
