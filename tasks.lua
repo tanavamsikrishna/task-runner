@@ -13,7 +13,7 @@ local function task2_2()
 end
 
 return {
-  deploy = 'luarocks --lua-version=' .. _VERSION:match('%d+%.%d+') .. ' make --global',
+  deploy = 'luarocks --lua-version=' .. _VERSION:match('%d+%.%d+') .. ' make --local',
   format = 'stylua .',
   ['local'] = task1,
   fn_with_args = function(arg1, arg2)
