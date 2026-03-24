@@ -20,6 +20,5 @@ build = {
   },
 }
 dependencies = {
-  'luaposix',
   'lua-term',
 }

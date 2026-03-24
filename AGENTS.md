@@ -4,7 +4,7 @@ A lightweight, flexible task runner written in Lua. It allows users to define ta
 
 ## Project Overview
 
-- **Core Technology:** Lua
+- **Core Technology:** Lua >= 5.4
 - **Package Manager:** LuaRocks
 - **Key Components:**
   - `trn`: The CLI executable script.
@@ -22,9 +22,9 @@ The project uses `luarocks` for dependency management and installation.
 luarocks make
 ```
 
-**Install Globally:**
+**Install:**
 ```bash
-luarocks make --global
+luarocks --lua-version <lua-version> make --local
 ```
 
 ### Usage
