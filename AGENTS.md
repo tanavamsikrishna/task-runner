@@ -4,7 +4,7 @@ A lightweight, flexible task runner written in Lua. It allows users to define ta
 
 ## Project Overview
 
-- **Core Technology:** Lua >= 5.4
+- **Core Technology:** Lua == 5.4
 - **Package Manager:** LuaRocks
 - **Key Components:**
   - `trn`: The CLI executable script.
