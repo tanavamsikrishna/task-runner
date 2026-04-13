@@ -68,8 +68,7 @@ local function execute_task(task_seq, tasks, prog_args)
   return true
 end
 
-local function build_help(task_tree, lines, parent_path)
-  local colors = require('term.colors')
+local function build_help(task_tree, lines, parent_path, colors)
   local code_fg = colors.white
   local doc_fg = string.char(27) .. '[3m' .. colors.blue
   local parent_path_str = table.concat(parent_path, ' ')
@@ -87,7 +86,7 @@ local function build_help(task_tree, lines, parent_path)
       table.insert(lines, { parent_path_str, code_fg .. '$ ' .. v .. colors.reset })
     elseif k ~= '_action' and k ~= '_setup' then
       table.insert(parent_path, k)
-      build_help(v, lines, parent_path)
+      build_help(v, lines, parent_path, colors)
       table.remove(parent_path, #parent_path)
     end
   end
@@ -230,7 +229,7 @@ local function main()
   local tasks = load_tasks()
   if #arg == 0 then
     local help_lines = {}
-    build_help(tasks, help_lines, {})
+    build_help(tasks, help_lines, {}, require('term.colors'))
     print_two_column_table(help_lines)
   elseif arg[1] == '--completions' then
     process_shell_completions(tasks)
