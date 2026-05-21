@@ -198,7 +198,7 @@ local function process_shell_completions(tasks)
   -- List tasks at the current_tasks_node that start with partial_word
   for task_name, task_value in pairs(current_tasks_node) do
     -- Ignore internal keys like _desc, _action, _setup (those starting with '_')
-    if not string.match(task_name, '^_') then
+    if string.sub(task_name, 1, 1) ~= '_' then
       -- Match if partial_word is empty (list all) or if task_name starts with partial_word
       if #partial_word == 0 or string.sub(task_name, 1, #partial_word) == partial_word then
         io.stdout:write(task_name)
