@@ -34,27 +34,25 @@ end
 ---@param prog_args string[]
 local function execute_task(task_seq, tasks, prog_args)
   local setup_function = nil
-  if tasks._setup ~= nil then
-    setup_function = tasks._setup
+
+  local function update_setup(node)
+    if type(node) == 'table' and node._setup ~= nil then
+      setup_function = node._setup
+    end
   end
+
+  update_setup(tasks)
   for _, task_name in ipairs(task_seq) do
     if type(tasks) == 'table' and tasks[task_name] ~= nil then
-      if tasks._setup ~= nil then
-        setup_function = tasks._setup
-      end
       tasks = tasks[task_name]
+      update_setup(tasks)
     else
       return false, 'Task `' .. table.concat(task_seq, ' ') .. '` not found'
     end
   end
 
-  if type(tasks) == 'table' then
-    if tasks._setup ~= nil then
-      setup_function = tasks._setup
-    end
-    if tasks._action ~= nil then
-      tasks = tasks._action
-    end
+  if type(tasks) == 'table' and tasks._action ~= nil then
+    tasks = tasks._action
   end
 
   if setup_function then
