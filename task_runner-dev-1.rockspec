@@ -21,4 +21,5 @@ build = {
 }
 dependencies = {
   'lua-term',
+  'penlight',
 }

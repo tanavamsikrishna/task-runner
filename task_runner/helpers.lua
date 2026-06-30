@@ -1,36 +1,40 @@
+local pl_utils = require('pl.utils')
+
 local M = {}
 
 M._index = M
 setmetatable(M, M)
 
--- Runs a command and returns combined stdout/stderr and exit_code
-function M.proc(cmd)
-  local full_cmd = string.format('(%s) 2>&1', cmd)
-  local handle = io.popen(full_cmd, 'r')
-  local output = handle:read('*a')
-  local success, _, status = handle:close()
-
-  if success then
-    status = 0
-  elseif type(success) == 'number' then
-    -- Fallback for Lua 5.1 / LuaJIT
-    status = success / 256
+---@param cmd string
+---@param args? string|table<string>
+local function _build_cmd(cmd, args)
+  if args == nil or (type(args) == 'table' and #args == 0) then
+    return cmd
   end
-
-  return output, status
+  return cmd .. ' ' .. pl_utils.quote_arg(args)
 end
 
-function M.shell(cmd)
-  local is_success, exitcode, code = os.execute(cmd)
-  if is_success then
-    return
-  end
-  if exitcode == 'exit' then
-    io.stderr:write('Error running cmd `' .. cmd .. '`\n')
-    os.exit(code)
-  else
-    io.stderr:write('Interrupted with signal `' .. code .. '`\n')
-    os.exit(true)
+-- Runs a command and returns stdout, stderr, and exit_code
+---@param cmd string
+---@param args? string|table<string>
+---@return string stdout
+---@return string stderr
+---@return integer exit_code
+function M.proc(cmd, args)
+  local full_cmd = _build_cmd(cmd, args)
+  local _, exit_code, stdout, stderr = pl_utils.executeex(full_cmd)
+  return stdout, stderr, exit_code
+end
+
+-- Like `proc` but redirects output to console and kills the program if cmd fails
+---@param cmd string
+---@param args? string|table<string>
+function M.shell(cmd, args)
+  local full_cmd = _build_cmd(cmd, args)
+  local compat = require('pl.compat')
+  local success, exit_code = compat.execute(full_cmd)
+  if not success then
+    pl_utils.quit(exit_code)
   end
 end
 

@@ -1,7 +1,8 @@
 local utils = require('task_runner.helpers')
 
 local function task1()
-  print('task 1 executed!')
+  utils.shell('git', 'status')
+  print('Ran git status; task 1 executed!')
 end
 
 local function task2_1()
@@ -24,7 +25,7 @@ return {
       print('Setup for task2')
     end,
     task1 = {
-      _desc = 'Run task2.taks1',
+      _desc = 'Run task2.task1',
       _action = task2_1,
     },
     task2 = task2_2,
@@ -33,12 +34,12 @@ return {
     end,
     _desc = 'Run task2 related tasks',
     test1 = function()
-      utils.shell('sleep 2')
+      utils.shell('sleep', '2')
     end,
   },
   task3 = {
     _setup = function()
-      utils.shell('echo setup run')
+      utils.shell('echo', 'setup run')
     end,
     _action = 'echo Hello',
   },

@@ -4,7 +4,9 @@
     "library": [
       "./lua_modules/lib/lua/5.4/",
       "./lua_modules/share/lua/5.4/",
-      "/Users/vamsi/.luastubs"
+      "/Users/vamsi/.luastubs",
+      "/Users/vamsi/.luarocks/share/lua/5.4",
+      "/Users/vamsi/.luarocks/lib/lua/5.4"
     ]
   },
   "diagnostics": {

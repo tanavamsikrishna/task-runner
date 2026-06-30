@@ -13,6 +13,7 @@ end
 package.path = 'task_runner/?.lua;'
   .. ('lua_modules/share/lua/' .. version .. '/?.lua;')
   .. ('lua_modules/share/lua/' .. version .. '/?/init.lua;')
+  .. './?.lua;./?/init.lua;'
   .. user_path
   .. package.path
 package.cpath = ('lua_modules/lib/lua/' .. version .. '/?.so;') .. user_cpath .. package.cpath
