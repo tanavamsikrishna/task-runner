@@ -26,7 +26,7 @@ function M.proc(cmd, args)
   return stdout, stderr, exit_code
 end
 
--- Like `proc` but redirects output to console and kills the program if cmd fails
+-- Runs a command and redirects output to console and kills the program if cmd fails
 ---@param cmd string
 ---@param args? string|table<string>
 function M.shell(cmd, args)
