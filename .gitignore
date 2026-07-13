@@ -1,5 +1,4 @@
-/luarocks
-/lua
-/lua_modules
-/.luarocks
+node_modules/
+/trn
+/types-dist
 .nvim_socket
