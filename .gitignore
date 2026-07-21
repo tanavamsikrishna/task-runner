@@ -2,3 +2,7 @@ node_modules/
 /trn
 /types-dist
 .nvim_socket
+
+# from former global gitignore
+.DS_Store
+Session.vim
