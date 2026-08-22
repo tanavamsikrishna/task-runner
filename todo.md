@@ -1,0 +1,1 @@
+- [x] A helper to run commands and prepend a string to all output

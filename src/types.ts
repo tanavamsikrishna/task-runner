@@ -1,6 +1,7 @@
 // Type declarations only — this file is published verbatim as the global
 // `trn` types package (~/node_modules/trn/index.d.ts) by scripts/install-types.ts.
-// Do not add runtime code here; value helpers belong in tree.ts.
+// Do not add runtime code here. Runner-internal value helpers belong in
+// tree.ts; user-facing helpers live in helpers.ts (`trn/helpers`).
 
 /**
  * A runnable is either a shell command string or a function.

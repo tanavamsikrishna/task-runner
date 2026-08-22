@@ -1,4 +1,5 @@
 import { $ } from 'bun';
+import { runPrefixed } from './src/helpers.ts';
 import type { TaskTree } from './src/types.ts';
 
 async function task1() {
@@ -12,6 +13,10 @@ function task2_1() {
 
 function task2_2() {
   console.log('task2.task2 executed!');
+}
+
+async function testProcessOutputStreaming() {
+  await $`echo hello`;
 }
 
 export default {
@@ -54,5 +59,15 @@ export default {
       console.log(progArgs.join('|'));
     },
     _desc: 'Just a regular task5',
+  },
+  testProcessOutputStreaming,
+  prefixed: {
+    _desc: 'Demo of runPrefixed (tag each line of stdout/stderr)',
+    _action: async () => {
+      await Promise.all([
+        runPrefixed('out', 'echo hello; echo world'),
+        runPrefixed('err', 'echo oops >&2'),
+      ]);
+    },
   },
 } satisfies TaskTree;

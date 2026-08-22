@@ -9,6 +9,7 @@ A lightweight, flexible task runner written in TypeScript, built with Bun. It al
 - **Key Components:**
   - `src/main.ts`: CLI entry point (argv dispatch).
   - `src/execute.ts`, `src/help.ts`, `src/completions.ts`, `src/load.ts`, `src/types.ts`: runner logic.
+  - `src/helpers.ts`: user-facing helpers for function tasks (`runPrefixed`), published as `trn/helpers`.
   - `tasks.ts`: The configuration file where tasks are defined (this repo's own doubles as the demo).
 
 ## Building and Running
@@ -84,13 +85,24 @@ Task files can import anything: other TypeScript files from any directory (ESM r
 
 ```ts
 import { $ } from 'bun';
-import { helpers } from '../shared/helpers.ts';
+import { runPrefixed } from 'trn/helpers';
+```
+
+`runPrefixed(tag, command)` runs `command` with `/bin/sh -c` and prepends a dim `[tag] ` to each line of stdout and stderr as they stream (`tag` is the label only, e.g. `'git status'`). Non-zero exits throw an `Error` with numeric `exitCode`. Use it from function tasks when several commands' output would otherwise interleave:
+
+```ts
+serve: () =>
+  Promise.all([
+    runPrefixed('api', 'bun run server'),
+    runPrefixed('web', 'vite'),
+  ]),
 ```
 
 Typing the export with `satisfies TaskTree` gives compile-time/editor validation:
 
 ```ts
 import type { TaskTree } from 'trn';
+import { runPrefixed } from 'trn/helpers';
 
 export default {
   // ...
@@ -99,7 +111,7 @@ export default {
 
 `bun run install-types` (part of `trn deploy`) makes this resolve from any `tasks.ts` under the home directory with no per-project setup. Rather than write into `~/node_modules` directly, it lets Bun own that space: it `bun add`s two things into a package manager-managed `~/package.json` (creating it if absent) —
 
-- **`trn`** — a `file:` dependency on `types-dist/`, a declaration-only package the script generates from a verbatim copy of `src/types.ts` (which must stay free of runtime code — value helpers live in `src/tree.ts`). `types-dist/` is a gitignored build artifact. Don't import `trn` as a value; there is no JavaScript behind it.
+- **`trn`** — a `file:` dependency on `types-dist/`, a package the script generates from a verbatim copy of `src/types.ts` (must stay free of runtime code — runner-internal helpers live in `src/tree.ts`) plus `src/helpers.ts` as the `trn/helpers` subpath. `types-dist/` is a gitignored build artifact. Don't import `trn` as a value; there is no JavaScript on the root export. Import `runPrefixed` from `trn/helpers`.
 - **`@types/bun`** — pinned to this repo's version, so `import { $ } from 'bun'` and the `Bun`/`process`/`Buffer` globals type-check too. Bun pulls its transitive chain (`bun-types`, `@types/node`, `undici-types`) automatically.
 
 Because Bun and the TypeScript language server resolve bare imports (and `@types`) by walking up parent directories, any file under `$HOME` sees both. Re-run `bun run install-types` after changing `TaskTree` or bumping Bun to refresh the pinned snapshot.
