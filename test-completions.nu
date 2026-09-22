@@ -9,7 +9,7 @@ $env.TRN_PATH = "./trn"  # Use local trn for testing
 
 def test-completions [] {
     let tests = [
-        {name: "Root tasks", args: [], expected_count: 8}
+        {name: "Root tasks", args: [], expected_count: 10}
         {name: "Subtask (task2)", args: ["task2"], expected_count: 4}
         {name: "Partial match (ta)", args: ["task2", "ta"], expected_count: 2}
         {name: "Trailing space (task2 )", args: ["task2", ""], expected_count: 4}

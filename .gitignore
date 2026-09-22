@@ -1,5 +1,4 @@
 node_modules/
-/trn
 /types-dist
 .nvim_socket
 

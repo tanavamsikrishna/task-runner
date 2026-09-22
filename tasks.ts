@@ -1,3 +1,5 @@
+// Task definitions for this repo, and the demo of the tasks.ts format.
+
 import { $ } from 'bun';
 import { runPrefixed } from './src/helpers.ts';
 import type { TaskTree } from './src/types.ts';
@@ -21,7 +23,7 @@ async function testProcessOutputStreaming() {
 
 export default {
   deploy:
-    'bun run build && mkdir -p ~/.local/bin && cp trn ~/.local/bin/trn && bun run install-types',
+    'chmod +x src/main.ts && mkdir -p ~/.local/bin && ln -sfn "$PWD/src/main.ts" ~/.local/bin/trn && ln -sfn src/main.ts trn && bun run install-types',
   format: 'bunx prettier --write src tests tasks.ts',
   local: task1,
   fn_with_args: (arg1?: string, arg2?: string) => {

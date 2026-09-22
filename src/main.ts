@@ -1,3 +1,7 @@
+#!/usr/bin/env bun
+// CLI entry point for `trn`: list tasks, print completions, or run one task.
+// Installed by symlinking this file to ~/.local/bin/trn. Requires `bun` on PATH.
+
 import { completionCandidates, printCompletionsScript } from './completions.ts';
 import { executeTask, splitArguments } from './execute.ts';
 import { buildHelp, printTwoColumnTable } from './help.ts';
@@ -31,7 +35,6 @@ async function main(): Promise<void> {
   }
 }
 
-// No top-level await: `bun build --bytecode` requires CJS-compatible output
 main().catch((err: unknown) => {
   console.error(err);
   process.exit(1);

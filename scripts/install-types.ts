@@ -44,8 +44,8 @@ await Bun.write(
   ) + '\n',
 );
 
-// 2. Pin @types/bun to the version this repo builds against, so the globally
-//    available Bun types match the runtime the binary is compiled with.
+// 2. Pin @types/bun to the version this repo uses, so the globally available
+//    Bun types match the Bun that runs trn.
 const bunTypesVersion = (
   (await Bun.file(`${repo}/node_modules/@types/bun/package.json`).json()) as { version: string }
 ).version;

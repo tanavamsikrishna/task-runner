@@ -5,7 +5,7 @@ A lightweight, flexible task runner written in TypeScript, built with Bun. It al
 ## Project Overview
 
 - **Core Technology:** Bun + TypeScript (zero runtime dependencies; `Bun.$` for shell execution)
-- **Distribution:** single standalone binary compiled with `bun build --compile` — target machines need neither Bun nor Node
+- **Distribution:** `~/.local/bin/trn` is a symlink to `src/main.ts`, executed by Bun through a shebang. `bun` must be on `PATH`.
 - **Key Components:**
   - `src/main.ts`: CLI entry point (argv dispatch).
   - `src/execute.ts`, `src/help.ts`, `src/completions.ts`, `src/load.ts`, `src/types.ts`: runner logic.
@@ -18,12 +18,11 @@ A lightweight, flexible task runner written in TypeScript, built with Bun. It al
 
 ```bash
 bun install            # dev dependencies only (types, tsc)
-bun run build          # compiles ./trn via `bun build --compile --minify --bytecode`
 bun run install-types  # bun add's the `trn` + `@types/bun` types into ~/package.json
-trn deploy             # or: all of the above + copies ./trn to ~/.local/bin (must be on PATH)
+bun src/main.ts deploy # symlinks ~/.local/bin/trn and ./trn to src/main.ts, then refreshes types
 ```
 
-During development, run the runner from source: `bun src/main.ts <task>`.
+During development, `./trn <task>` and `bun src/main.ts <task>` are the same program.
 
 ### Usage
 
@@ -128,4 +127,4 @@ Both call `trn --completions <args...>`, which emits `name\tdescription` candida
 - **Formatting:** `trn format` (prettier via bunx).
 - **Typecheck:** `bun run check` (`tsc --noEmit`).
 - **Tests:** `bun test` (unit) and `nu test-completions.nu` (completion contract against `./trn`).
-- **One-shot CLI principle:** `trn` starts, does one thing, and exits — keep startup work minimal (argv-first dispatch, no runtime dependencies, no caches or persistent state). The release build uses `--minify --bytecode`; because bytecode requires CJS-compatible output, `src/main.ts` must not use top-level `await`.
+- **One-shot CLI principle:** `trn` starts, does one thing, and exits — keep startup work minimal (argv-first dispatch, no runtime dependencies, no caches or persistent state).
