@@ -18,7 +18,7 @@ A lightweight, flexible task runner written in TypeScript, built with Bun. It al
 
 ```bash
 bun install            # dev dependencies only (types, tsc)
-bun run install-types  # bun add's the `trn` + `@types/bun` types into ~/package.json
+bun run install-types  # pnpm add's the `trn` + `@types/bun` types into ~/repo/package.json
 bun src/main.ts deploy # symlinks ~/.local/bin/trn and ./trn to src/main.ts, then refreshes types
 ```
 
@@ -114,12 +114,12 @@ export default {
 } satisfies TaskTree;
 ```
 
-`bun run install-types` (part of `trn deploy`) makes this resolve from any `tasks.ts` under the home directory with no per-project setup. Rather than write into `~/node_modules` directly, it lets Bun own that space: it `bun add`s two things into a package manager-managed `~/package.json` (creating it if absent) —
+`bun run install-types` (part of `trn deploy`) makes this resolve from any `tasks.ts` under `~/repo` with no per-project setup. Rather than write into `~/repo/node_modules` directly, it lets pnpm own that space: it `pnpm add`s two things into a package manager-managed `~/repo/package.json` (creating it if absent) —
 
 - **`trn`** — a `file:` dependency on `types-dist/`, a package the script generates from a verbatim copy of `src/types.ts` (must stay free of runtime code — runner-internal helpers live in `src/tree.ts`) plus `src/helpers.ts` as the `trn/helpers` subpath. `types-dist/` is a gitignored build artifact. Don't import `trn` as a value; there is no JavaScript on the root export. Import `runPrefixed` from `trn/helpers`.
-- **`@types/bun`** — pinned to this repo's version, so `import { $ } from 'bun'` and the `Bun`/`process`/`Buffer` globals type-check too. Bun pulls its transitive chain (`bun-types`, `@types/node`, `undici-types`) automatically.
+- **`@types/bun`** — pinned to this repo's version, so `import { $ } from 'bun'` and the `Bun`/`process`/`Buffer` globals type-check too. pnpm pulls its transitive chain (`bun-types`, `@types/node`, `undici-types`) automatically.
 
-Because Bun and the TypeScript language server resolve bare imports (and `@types`) by walking up parent directories, any file under `$HOME` sees both. Re-run `bun run install-types` after changing `TaskTree` or bumping Bun to refresh the pinned snapshot.
+Because Bun and the TypeScript language server resolve bare imports (and `@types`) by walking up parent directories, any file under `~/repo` sees both. pnpm's isolated layout (symlinks into `~/repo/node_modules/.pnpm`) works because both follow those symlinks; the global `~/.local/bin/trn` therefore keeps working from any directory under `~/repo` (e.g. `scripts/hammerspoon`). Requires `pnpm` on `PATH`. Files outside `~/repo` no longer resolve these. Re-run `bun run install-types` after changing `TaskTree` or bumping Bun to refresh the pinned snapshot.
 
 ## Shell Completions
 
