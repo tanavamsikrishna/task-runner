@@ -1,7 +1,7 @@
-import type { TaskNode, TaskTable } from './types.ts';
+import type { TaskNode, TaskTable } from "./types.ts";
 
 export function isTaskTable(node: unknown): node is TaskTable {
-  return typeof node === 'object' && node !== null;
+  return typeof node === "object" && node !== null;
 }
 
 /**

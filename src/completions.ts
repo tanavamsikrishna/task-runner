@@ -1,8 +1,8 @@
-import { getChild, isTaskTable } from './tree.ts';
-import type { TaskNode, TaskTree } from './types.ts';
+import { getChild, isTaskTable } from "./tree.ts";
+import type { TaskNode, TaskTree } from "./types.ts";
 
 export function printCompletionsScript(shell: string | undefined): void {
-  if (shell === 'fish') {
+  if (shell === "fish") {
     process.stdout.write(
       `complete -c trn -a '(trn --completions (commandline | string split " "))' -f\n`,
     );
@@ -17,9 +17,12 @@ export function printCompletionsScript(shell: string | undefined): void {
  * argument is a root-level task. The last argument is the partial word to
  * complete; the preceding ones form the path into the task tree.
  */
-export function completionCandidates(tasks: TaskTree, rawArgs: string[]): string[] {
+export function completionCandidates(
+  tasks: TaskTree,
+  rawArgs: string[],
+): string[] {
   let node: TaskNode = tasks;
-  let partialWord = '';
+  let partialWord = "";
 
   // Trim whitespace from all arguments (handles "task2 " with trailing space)
   const args = rawArgs.map((arg) => arg.trim());
@@ -43,7 +46,7 @@ export function completionCandidates(tasks: TaskTree, rawArgs: string[]): string
     const value = getChild(node, partialWord);
     if (isTaskTable(value)) {
       node = value;
-      partialWord = '';
+      partialWord = "";
     }
   }
 
@@ -62,14 +65,14 @@ export function completionCandidates(tasks: TaskTree, rawArgs: string[]): string
 
   const candidates: string[] = [];
   for (const [taskName, taskValue] of Object.entries(node)) {
-    if (taskName.startsWith('_')) {
+    if (taskName.startsWith("_")) {
       continue;
     }
     if (partialWord.length === 0 || taskName.startsWith(partialWord)) {
       let desc: string | undefined;
-      if (isTaskTable(taskValue) && typeof taskValue._desc === 'string') {
+      if (isTaskTable(taskValue) && typeof taskValue._desc === "string") {
         desc = taskValue._desc;
-      } else if (typeof taskValue === 'string') {
+      } else if (typeof taskValue === "string") {
         // The command string itself serves as a simple description
         desc = taskValue;
       }

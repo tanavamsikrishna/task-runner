@@ -1,10 +1,10 @@
-import { $ } from 'bun';
-import { getChild, isTaskTable } from './tree.ts';
-import type { Runnable, TaskNode } from './types.ts';
+import { $ } from "bun";
+import { getChild, isTaskTable } from "./tree.ts";
+import type { Runnable, TaskNode } from "./types.ts";
 
-const DIM = '\x1b[2m';
-const RED = '\x1b[31m';
-const RESET = '\x1b[0m';
+const DIM = "\x1b[2m";
+const RED = "\x1b[31m";
+const RESET = "\x1b[0m";
 
 /**
  * Report an error thrown while running a task, then exit. Bun's `$` streams the
@@ -13,12 +13,19 @@ const RESET = '\x1b[0m';
  * exit code. Anything else is an unexpected bug — keep its stack.
  */
 function reportRunError(label: string, err: unknown): never {
-  if (err !== null && typeof err === 'object' && typeof (err as { exitCode?: unknown }).exitCode === 'number') {
+  if (
+    err !== null &&
+    typeof err === "object" &&
+    typeof (err as { exitCode?: unknown }).exitCode === "number"
+  ) {
     const code = (err as { exitCode: number }).exitCode;
-    process.stderr.write(`${RED}Task \`${label}\` failed${RESET} (exit code ${code})\n`);
+    process.stderr.write(
+      `${RED}Task \`${label}\` failed${RESET} (exit code ${code})\n`,
+    );
     process.exit(code || 1);
   }
-  const detail = err instanceof Error ? (err.stack ?? err.message) : String(err);
+  const detail =
+    err instanceof Error ? (err.stack ?? err.message) : String(err);
   process.stderr.write(`${RED}Task \`${label}\` failed${RESET}\n${detail}\n`);
   process.exit(1);
 }
@@ -27,13 +34,13 @@ async function executeRunnable(
   runnable: TaskNode | undefined,
   progArgs?: string[],
 ): Promise<boolean> {
-  if (typeof runnable === 'string') {
+  if (typeof runnable === "string") {
     process.stderr.write(`${DIM}Running \`${runnable}${RESET}\`\n`);
     const result = await $`${{ raw: runnable }}`.nothrow();
     if (result.exitCode !== 0) {
       process.exit(result.exitCode);
     }
-  } else if (typeof runnable === 'function') {
+  } else if (typeof runnable === "function") {
     await runnable(...(progArgs ?? []));
   } else {
     return false;
@@ -64,7 +71,7 @@ export async function executeTask(
   for (const taskName of taskSeq) {
     const child = getChild(node, taskName);
     if (child === undefined) {
-      return `Task \`${taskSeq.join(' ')}\` not found`;
+      return `Task \`${taskSeq.join(" ")}\` not found`;
     }
     node = child;
     updateSetup(node);
@@ -74,7 +81,7 @@ export async function executeTask(
     node = node._action;
   }
 
-  const label = taskSeq.join(' ');
+  const label = taskSeq.join(" ");
   if (setupRunnable !== undefined) {
     try {
       if (!(await executeRunnable(setupRunnable))) {
@@ -95,12 +102,14 @@ export async function executeTask(
 }
 
 /** Split argv into the task path and the program args, separated by `--`. */
-export function splitArguments(cmdLineArgs: string[]): [taskSeq: string[], progArgs: string[]] {
+export function splitArguments(
+  cmdLineArgs: string[],
+): [taskSeq: string[], progArgs: string[]] {
   const taskSeq: string[] = [];
   const progArgs: string[] = [];
   let current = taskSeq;
   for (const arg of cmdLineArgs) {
-    if (arg === '--') {
+    if (arg === "--") {
       current = progArgs;
     } else {
       current.push(arg);

@@ -8,8 +8,8 @@
  * `./src/helpers.ts`).
  */
 
-const DIM = '\x1b[2m';
-const RESET = '\x1b[0m';
+const DIM = "\x1b[2m";
+const RESET = "\x1b[0m";
 
 /** Dim `[tag]` plus a trailing space — the prefix written before each output line. */
 export function formatTag(tag: string): string {
@@ -17,7 +17,7 @@ export function formatTag(tag: string): string {
 }
 
 function stripTrailingCr(line: string): string {
-  return line.endsWith('\r') ? line.slice(0, -1) : line;
+  return line.endsWith("\r") ? line.slice(0, -1) : line;
 }
 
 /**
@@ -31,15 +31,15 @@ export function applyLinePrefix(
   tag: string,
   eof = false,
 ): [pending: string, output: string] {
-  const parts = (pending + chunk).split('\n');
-  let next = parts.pop() ?? '';
-  let output = '';
+  const parts = (pending + chunk).split("\n");
+  let next = parts.pop() ?? "";
+  let output = "";
   for (const part of parts) {
-    output += tag + stripTrailingCr(part) + '\n';
+    output += tag + stripTrailingCr(part) + "\n";
   }
-  if (eof && next !== '') {
-    output += tag + stripTrailingCr(next) + '\n';
-    next = '';
+  if (eof && next !== "") {
+    output += tag + stripTrailingCr(next) + "\n";
+    next = "";
   }
   return [next, output];
 }
@@ -51,16 +51,20 @@ async function pipePrefixed(
 ): Promise<void> {
   const decoder = new TextDecoder();
   const reader = stream.getReader();
-  let pending = '';
+  let pending = "";
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
         break;
       }
-      const [next, output] = applyLinePrefix(pending, decoder.decode(value, { stream: true }), tag);
+      const [next, output] = applyLinePrefix(
+        pending,
+        decoder.decode(value, { stream: true }),
+        tag,
+      );
       pending = next;
-      if (output !== '') {
+      if (output !== "") {
         dest.write(output);
       }
     }
@@ -68,7 +72,7 @@ async function pipePrefixed(
     reader.releaseLock();
   }
   const [, tail] = applyLinePrefix(pending, decoder.decode(), tag, true);
-  if (tail !== '') {
+  if (tail !== "") {
     dest.write(tail);
   }
 }
@@ -79,10 +83,10 @@ async function pipePrefixed(
  */
 export async function runPrefixed(tag: string, command: string): Promise<void> {
   const prefix = formatTag(tag);
-  const proc = Bun.spawn(['/bin/sh', '-c', command], {
-    stdin: 'inherit',
-    stdout: 'pipe',
-    stderr: 'pipe',
+  const proc = Bun.spawn(["/bin/sh", "-c", command], {
+    stdin: "inherit",
+    stdout: "pipe",
+    stderr: "pipe",
   });
 
   await Promise.all([
@@ -92,7 +96,9 @@ export async function runPrefixed(tag: string, command: string): Promise<void> {
 
   const exitCode = await proc.exited;
   if (exitCode !== 0) {
-    const err = new Error(`Command failed (exit ${exitCode}): ${command}`) as Error & {
+    const err = new Error(
+      `Command failed (exit ${exitCode}): ${command}`,
+    ) as Error & {
       exitCode: number;
     };
     err.exitCode = exitCode;

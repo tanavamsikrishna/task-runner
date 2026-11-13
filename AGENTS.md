@@ -28,29 +28,30 @@ During development, `./trn <task>` and `bun src/main.ts <task>` are the same pro
 
 The `trn` tool looks for a `tasks.ts` (fallback: `tasks.js`) file in the current working directory.
 
-**List Tasks:**
-Running `trn` without arguments will list all available tasks defined in `tasks.ts`.
+**List Tasks:** Running `trn` without arguments will list all available tasks defined in `tasks.ts`.
+
 ```bash
 trn
 ```
 
 **Run a Task:**
+
 ```bash
 trn <task_name>
 # Example from local tasks.ts
 trn format
 ```
 
-**Run Nested Tasks:**
-Tasks can be organized into namespaces (nested objects).
+**Run Nested Tasks:** Tasks can be organized into namespaces (nested objects).
+
 ```bash
 trn <namespace> <task_name>
 # Example
 trn task2 task1
 ```
 
-**Pass Program Arguments:**
-Everything after `--` is passed to function tasks, spread positionally.
+**Pass Program Arguments:** Everything after `--` is passed to function tasks, spread positionally.
+
 ```bash
 trn task5 -- a b c
 ```
@@ -59,32 +60,37 @@ trn task5 -- a b c
 
 The `tasks.ts` file must `export default` an object. Keys are task names, and values can be:
 
-1.  **String:** Executes as a shell command (via `Bun.$`; a non-zero exit code exits `trn` with that code).
-    ```ts
-    list: 'ls -la'
-    ```
-2.  **Function:** Executes as TypeScript code. May be async (it is awaited). Receives the program args (after `--`) spread positionally: `(...progArgs: string[]) => unknown`.
-    ```ts
-    greet: () => console.log('Hello World')
-    ```
-3.  **Object (Namespace or Detailed Task):**
-    - Can contain `_desc` (description), `_setup` (pre-requisite), and `_action` (main logic).
-    - Can contain nested keys for sub-tasks.
-    - The last `_setup` seen along the invoked task path runs first (not a stack — only one setup runs).
+1. **String:** Executes as a shell command (via `Bun.$`; a non-zero exit code exits `trn` with that code).
 
-    ```ts
-    deploy: {
-      _desc: 'Deploy the application',
-      _setup: () => console.log('Checking auth...'),
-      _action: 'ansible-playbook deploy.yml',
-    }
-    ```
+   ```ts
+   list: 'ls -la'
+   ```
+
+2. **Function:** Executes as TypeScript code. May be async (it is awaited). Receives the program args (after `--`) spread positionally: `(...progArgs: string[]) => unknown`.
+
+   ```ts
+   greet: () => console.log('Hello World')
+   ```
+
+3. **Object (Namespace or Detailed Task):**
+
+   - Can contain `_desc` (description), `_setup` (pre-requisite), and `_action` (main logic).
+   - Can contain nested keys for sub-tasks.
+   - The last `_setup` seen along the invoked task path runs first (not a stack — only one setup runs).
+
+   ```ts
+   deploy: {
+     _desc: 'Deploy the application',
+     _setup: () => console.log('Checking auth...'),
+     _action: 'ansible-playbook deploy.yml',
+   }
+   ```
 
 Task files can import anything: other TypeScript files from any directory (ESM resolution is relative to `tasks.ts` itself), npm packages from the nearest `node_modules`, and Bun built-ins like `Bun.$`:
 
 ```ts
-import { $ } from 'bun';
-import { runPrefixed } from 'trn/helpers';
+import { $ } from "bun";
+import { runPrefixed } from "trn/helpers";
 ```
 
 `runPrefixed(tag, command)` runs `command` with `/bin/sh -c` and prepends a dim `[tag] ` to each line of stdout and stderr as they stream (`tag` is the label only, e.g. `'git status'`). Non-zero exits throw an `Error` with numeric `exitCode`. Use it from function tasks when several commands' output would otherwise interleave:
@@ -100,8 +106,8 @@ serve: () =>
 Typing the export with `satisfies TaskTree` gives compile-time/editor validation:
 
 ```ts
-import type { TaskTree } from 'trn';
-import { runPrefixed } from 'trn/helpers';
+import type { TaskTree } from "trn";
+import { runPrefixed } from "trn/helpers";
 
 export default {
   // ...
